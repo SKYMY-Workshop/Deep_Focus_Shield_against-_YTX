@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "🛡️ Deep Focus Shield",
-  "version": "1.0.3",
-  "description": "サイト内の中毒性があるコンテンツだけを非表示にし、情報収集の跨げにならずに集中力を維持することを手助けします。",
+  "version": "1.0.4",
+  "description": "SNS依存防止のために、短時間で消費される中毒性コンテンツを自動的にブロックし、深い集中力を保つことをサポートします。",
   "permissions": [
     "storage",
     "webNavigation",

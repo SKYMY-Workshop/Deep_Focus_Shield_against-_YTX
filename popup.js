@@ -55,6 +55,7 @@ async function loadSettings() {
     // 新機能の設定読み込み（未設定の場合はデフォルトでON）
     document.getElementById('youtube-hide-endscreen').checked = currentSettings.youtube.hideEndScreen ?? true;
     document.getElementById('youtube-hide-comments').checked = currentSettings.youtube?.hideComments ?? true;
+    document.getElementById('youtube-hide-miniplayer').checked = currentSettings.youtube?.hideMiniplayer ?? true;
     
     // Twitter設定を適用
     document.getElementById('twitter-default-following').checked = currentSettings.twitter?.defaultFollowing ?? true;
@@ -159,7 +160,8 @@ async function saveSettings() {
         hideRelated: document.getElementById('youtube-hide-related').checked,
         // 新機能の保存処理
         hideEndScreen: document.getElementById('youtube-hide-endscreen').checked,
-        hideComments: document.getElementById('youtube-hide-comments').checked
+        hideComments: document.getElementById('youtube-hide-comments').checked,
+        hideMiniplayer: document.getElementById('youtube-hide-miniplayer').checked
       },
       twitter: {
         enabled: true,

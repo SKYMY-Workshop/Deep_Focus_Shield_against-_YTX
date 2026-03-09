@@ -19,7 +19,8 @@ const DEFAULT_SETTINGS = {
     hideEndscreen: true,
     hideComments: true,
     disableAutoplay: false,
-    hideHeaderBadges: false
+    hideHeaderBadges: false,
+    hideMiniplayer: true
   },
   twitter: {
     enabled: true,

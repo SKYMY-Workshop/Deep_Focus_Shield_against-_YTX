@@ -20,7 +20,8 @@ const DEFAULT_SETTINGS = {
     redirectHome: true,
     hideRelated: true,
     hideEndScreen: true,
-    hideComments: true
+    hideComments: true,
+    hideMiniplayer: true
   }
 };
 
@@ -32,6 +33,9 @@ async function loadSettings() {
       settings = result.settings;
       if (settings.youtube && settings.youtube.hideEndScreen === undefined) {
         settings.youtube.hideEndScreen = true;
+      }
+      if (settings.youtube && settings.youtube.hideMiniplayer === undefined) {
+        settings.youtube.hideMiniplayer = true;
       }
     } else {
       settings = DEFAULT_SETTINGS;
@@ -94,6 +98,7 @@ function applyRestrictions() {
       'acis-youtube-related-hidden',
       'acis-youtube-endscreen-hidden',
       'acis-youtube-comments-hidden',
+      'acis-youtube-miniplayer-hidden',
       'acis-grayscale'
     );
     return;
@@ -107,6 +112,7 @@ function applyRestrictions() {
   toggleBodyClass('acis-youtube-related-hidden', settings.youtube.hideRelated);
   toggleBodyClass('acis-youtube-endscreen-hidden', settings.youtube.hideEndScreen !== false);
   toggleBodyClass('acis-youtube-comments-hidden', settings.youtube.hideComments);
+  toggleBodyClass('acis-youtube-miniplayer-hidden', settings.youtube.hideMiniplayer !== false);
 
   // Shortsと関連動画のDOM操作（こちらは既存のまま維持）
   if (settings.youtube.hideShorts) hideShorts();
@@ -177,6 +183,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     settings = request.settings;
     if (settings && settings.youtube && settings.youtube.hideEndScreen === undefined) {
       settings.youtube.hideEndScreen = true;
+    }
+    if (settings && settings.youtube && settings.youtube.hideMiniplayer === undefined) {
+      settings.youtube.hideMiniplayer = true;
     }
     applyRestrictions();
   }

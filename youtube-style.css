@@ -110,6 +110,16 @@ body.acis-youtube-endscreen-hidden #movie_player.ended-mode .ytp-tooltip {
   opacity: 1 !important;
 }
 
+/* ミニプレイヤー非表示 */
+body.acis-youtube-miniplayer-hidden ytd-miniplayer,
+body.acis-youtube-miniplayer-hidden #miniplayer,
+body.acis-youtube-miniplayer-hidden ytd-miniplayer[active],
+body.acis-youtube-miniplayer-hidden ytd-miniplayer.ytd-app {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* グレースケール用の追加スタイル */
 body.acis-grayscale video,
 body.acis-grayscale img,
