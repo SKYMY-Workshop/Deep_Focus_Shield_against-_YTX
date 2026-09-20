@@ -87,7 +87,7 @@
         <div class="toggle-item">
           <label>
             <span>ホーム画面無効化 (登録へリダイレクト)</span>
-            <input type="checkbox" id="youtube-redirect-home" checked>
+            <input type="checkbox" id="youtube-redirect-home">
             <span class="toggle-indicator"></span>
           </label>
           <span class="help-icon" title="💡 アルゴリズムが仕掛ける「おすすめの罠」を回避。受動的なザッピングを封じ、能動的な利用へと誘導します。">?</span>
@@ -114,7 +114,7 @@
         <div class="toggle-item">
           <label>
             <span>コメントを非表示</span>
-            <input type="checkbox" id="youtube-hide-comments" checked>
+            <input type="checkbox" id="youtube-hide-comments">
             <span class="toggle-indicator"></span>
           </label>
           <span class="help-icon" title="💡 他人の感情や無責任な意見は、あなたの思考にとってノイズでしかありません。コンテンツの中身だけに向き合います。">?</span>
@@ -143,9 +143,25 @@
             <input type="checkbox" id="twitter-default-following" checked>
             <span class="toggle-indicator"></span>
           </label>
-          <span class="help-icon" title="💡 x.com/homeを開いたときに自動的に「フォロー中」タブを表示します。">?</span>
+          <span class="help-icon" title="💡 x.com/homeを開いたときに自動的に「フォロー中」タブを表示します。「リストを既定にする」とは排他です。">?</span>
         </div>
         
+        <div class="toggle-item">
+          <label>
+            <span>リストを既定のタイムラインにする</span>
+            <input type="checkbox" id="twitter-default-list-enabled">
+            <span class="toggle-indicator"></span>
+          </label>
+          <span class="help-icon" title="💡 ONにすると、下で指定したリストのタブを開いた状態でXが始まります。「フォロー中」指定とは排他で、こちらをONにすると自動的にOFFになります。">?</span>
+        </div>
+
+        <div class="list-name-row">
+          <input type="text" id="twitter-default-list-name" class="list-name-input"
+                 list="twitter-tab-candidates" placeholder="リスト名（タブに表示されている文字）" autocomplete="off">
+          <datalist id="twitter-tab-candidates"></datalist>
+          <p id="twitter-list-hint" class="snooze-note"></p>
+        </div>
+
         <div class="toggle-item">
           <label>
             <span>おすすめタブ非表示</span>
@@ -163,7 +179,33 @@
           </label>
           <span class="help-icon" title="💡 精神を消耗させる炎上やゴシップを視界から消去。感情の安定と、創作への静かな意欲を守ります。">?</span>
         </div>
-        
+      </div>
+
+      <!-- スヌーズするトピック自動再適用 -->
+      <div class="snooze-section">
+        <div class="snooze-header-row">
+          <span class="snooze-label">スヌーズするトピック（自動再適用）</span>
+          <span class="help-icon" title="💡 Xのトピックスヌーズは24時間で自動解除されます。この機能はスヌーズ設定を記憶し、Xを開くたびに自動で再適用します。">?</span>
+        </div>
+        <div id="snooze-status-area">
+          <p id="snooze-last-applied-text" class="snooze-status-text">未設定</p>
+          <div id="snooze-topics-list" class="snooze-topics-list"></div>
+        </div>
+
+        <div class="toggle-item">
+          <label>
+            <span>自動で再適用する</span>
+            <input type="checkbox" id="twitter-auto-reapply-snooze" checked>
+            <span class="toggle-indicator"></span>
+          </label>
+          <span class="help-icon" title="💡 OFFにすると自動の貼り直しを止めます。下の「今すぐ適用」は、このトグルに関係なくいつでも使えます。">?</span>
+        </div>
+
+        <button id="snooze-apply-btn" class="snooze-capture-btn">今すぐ適用</button>
+        <p id="snooze-result-text" class="snooze-note"></p>
+
+        <button id="snooze-capture-btn" class="snooze-capture-btn">現在のスヌーズ状態を保存</button>
+        <p class="snooze-note">※先にXでスヌーズを手動設定してから保存してください</p>
       </div>
     </div>
 
@@ -191,6 +233,7 @@
     </div>
   </div>
 
+  <script src="settings-defaults.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

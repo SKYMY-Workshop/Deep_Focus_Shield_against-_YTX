@@ -1,135 +1,112 @@
 // YouTube Content Script (Overlay Strategy)
+//
+// 設定の既定値・マージ・時間帯判定は settings-defaults.js に集約している。
 
 let settings = null;
 let observer = null;
 let debounceTimer = null;
 
-// デフォルト設定
-const DEFAULT_SETTINGS = {
-  common: {
-    enabled: true,
-    alwaysOn: true,
-    activeDays: [],
-    timeSlots: [{start: '07:00', end: '12:00'}],
-    grayscale: false
-  },
-  youtube: {
-    enabled: true,
-    alwaysOn: true,
-    activeDays: [],
-    timeSlots: [{start: '07:00', end: '12:00'}],
-    hideShorts: true,
-    redirectHome: true,
-    hideRelated: true,
-    hideEndScreen: true,
-    hideComments: true,
-    hideMiniplayer: true
+// このスクリプトが inline style で隠した要素と、その元の値。
+// 制限時間が終わったときに確実に戻せるようにするための台帳。
+const hiddenElements = new Map();
+
+function setInlineStyles(el, styles) {
+  if (!el) return;
+  const saved = hiddenElements.get(el) || {};
+  for (const prop of Object.keys(styles)) {
+    if (!(prop in saved)) saved[prop] = el.style[prop];
   }
-};
+  hiddenElements.set(el, saved);
+  for (const [prop, value] of Object.entries(styles)) {
+    el.style[prop] = value;
+  }
+}
+
+function hideElement(el) {
+  setInlineStyles(el, { display: 'none' });
+}
+
+// 書き換えた inline style をすべて元に戻す。
+// 以前は解除時にbodyクラスを外すだけで inline style が残り、
+// 制限時間を過ぎてもリロードするまで関連動画とコメントが消えたままだった。
+function unhideAllElements() {
+  for (const [el, saved] of hiddenElements) {
+    for (const [prop, value] of Object.entries(saved)) {
+      el.style[prop] = value;
+    }
+  }
+  hiddenElements.clear();
+}
 
 // 設定を読み込む
 async function loadSettings() {
   try {
     const result = await chrome.storage.sync.get(['settings']);
-    if (result.settings) {
-      settings = result.settings;
-      if (settings.youtube && settings.youtube.hideEndScreen === undefined) {
-        settings.youtube.hideEndScreen = true;
-      }
-      if (settings.youtube && settings.youtube.hideMiniplayer === undefined) {
-        settings.youtube.hideMiniplayer = true;
-      }
-    } else {
-      settings = DEFAULT_SETTINGS;
-    }
+    settings = dfsMergeSettings(result.settings);
     applyRestrictions();
   } catch (error) {
-    console.error('YouTube: 設定の読み込みに失敗:', error);
+    console.error('Deep Focus Shield (YouTube): 設定の読み込みに失敗:', error);
   }
 }
 
-// 制限を適用すべきか判定
+// 制限を適用すべきか判定（判定ロジックは settings-defaults.js に集約）
 function shouldApplyRestrictions() {
-  if (settings?.common?.alwaysOn) return true;
-  if (!settings || !settings.youtube || !settings.youtube.enabled) return false;
-  if (settings.youtube.alwaysOn) return true;
-
-  const now = new Date();
-  const currentDay = now.getDay();
-  const currentTime = now.getHours() * 60 + now.getMinutes();
-
-  if (settings.common && settings.common.activeDays?.includes(currentDay)) {
-    for (const slot of (settings.common.timeSlots || [])) {
-      const [sh, sm] = slot.start.split(':').map(Number);
-      const [eh, em] = slot.end.split(':').map(Number);
-      const start = sh * 60 + sm;
-      const end = eh * 60 + em;
-      if (end > start) {
-        if (currentTime >= start && currentTime <= end) return true;
-      } else {
-        if (currentTime >= start || currentTime <= end) return true;
-      }
-    }
-  }
-  
-  if (settings.youtube.activeDays?.includes(currentDay)) {
-    for (const slot of (settings.youtube.timeSlots || [])) {
-      const [sh, sm] = slot.start.split(':').map(Number);
-      const [eh, em] = slot.end.split(':').map(Number);
-      const start = sh * 60 + sm;
-      const end = eh * 60 + em;
-      if (end > start) {
-        if (currentTime >= start && currentTime <= end) return true;
-      } else {
-        if (currentTime >= start || currentTime <= end) return true;
-      }
-    }
-  }
-  return false;
+  return dfsShouldApplyRestrictions(settings, 'youtube');
 }
+
+const BODY_CLASSES = [
+  'acis-youtube-active',
+  'acis-youtube-shorts-hidden',
+  'acis-youtube-related-hidden',
+  'acis-youtube-endscreen-hidden',
+  'acis-youtube-comments-hidden',
+  'acis-youtube-miniplayer-hidden',
+  'acis-grayscale'
+];
 
 // 制限を適用
 function applyRestrictions() {
-  const isRestricted = shouldApplyRestrictions();
+  if (!settings) return;
 
-  // クラスの着脱処理
-  if (!isRestricted) {
-    document.body.classList.remove(
-      'acis-youtube-active',
-      'acis-youtube-shorts-hidden',
-      'acis-youtube-related-hidden',
-      'acis-youtube-endscreen-hidden',
-      'acis-youtube-comments-hidden',
-      'acis-youtube-miniplayer-hidden',
-      'acis-grayscale'
-    );
-    // 制限解除時はObserverを停止
+  if (!shouldApplyRestrictions()) {
+    document.body.classList.remove(...BODY_CLASSES);
+    unhideAllElements();
     if (observer) {
       observer.disconnect();
       observer = null;
     }
     return;
   }
-  
+
+  // 前回隠した要素を一度すべて戻してから貼り直す。
+  // こうしないと、トグルをOFFにしても inline style が残って消えたままになる。
+  // 同期処理なので途中で再描画は挟まらない。
+  unhideAllElements();
+
   document.body.classList.add('acis-youtube-active');
-  
-  // 各機能の適用（CSSクラスの付与のみで制御）
+
+  // CSSクラスで制御する機能
   toggleBodyClass('acis-grayscale', settings.common?.grayscale);
   toggleBodyClass('acis-youtube-shorts-hidden', settings.youtube.hideShorts);
   toggleBodyClass('acis-youtube-related-hidden', settings.youtube.hideRelated);
-  toggleBodyClass('acis-youtube-endscreen-hidden', settings.youtube.hideEndScreen !== false);
+  toggleBodyClass('acis-youtube-endscreen-hidden', settings.youtube.hideEndScreen);
   toggleBodyClass('acis-youtube-comments-hidden', settings.youtube.hideComments);
-  toggleBodyClass('acis-youtube-miniplayer-hidden', settings.youtube.hideMiniplayer !== false);
+  toggleBodyClass('acis-youtube-miniplayer-hidden', settings.youtube.hideMiniplayer);
 
-  // Shortsと関連動画のDOM操作（こちらは既存のまま維持）
-  if (settings.youtube.hideShorts) hideShorts();
-  if (settings.youtube.hideRelated) hideRelatedVideos();
-  if (settings.youtube.hideComments) hideComments();
+  // DOM操作で制御する機能
+  applyDomHiding();
 
-  // DOMの変更を監視
   if (!observer) {
     startObserver();
   }
+}
+
+// DOM操作による非表示処理をまとめて適用する
+function applyDomHiding() {
+  if (!settings) return;
+  if (settings.youtube.hideShorts) hideShorts();
+  if (settings.youtube.hideRelated) hideRelatedVideos();
+  if (settings.youtube.hideComments) hideComments();
 }
 
 // ヘルパー関数: クラスの切り替え
@@ -141,51 +118,39 @@ function toggleBodyClass(className, condition) {
   }
 }
 
-// --- 以下、既存のDOM操作関数 ---
+// --- 以下、DOM操作関数 ---
 
 function hideShorts() {
-  const shortsShelf = document.querySelectorAll('[title="Shorts"], [aria-label*="Shorts"]');
-  shortsShelf.forEach(el => {
-    const section = el.closest('ytd-rich-section-renderer, ytd-reel-shelf-renderer');
-    if (section) section.style.display = 'none';
+  document.querySelectorAll('[title="Shorts"], [aria-label*="Shorts"]').forEach(el => {
+    hideElement(el.closest('ytd-rich-section-renderer, ytd-reel-shelf-renderer'));
   });
+
   const shortsTab = document.querySelector('a[title="Shorts"]');
   if (shortsTab) {
-    const entry = shortsTab.closest('ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer');
-    if (entry) entry.style.display = 'none';
+    hideElement(shortsTab.closest('ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer'));
   }
-  const shortsVideos = document.querySelectorAll('a[href*="/shorts/"]');
-  shortsVideos.forEach(video => {
-    const renderer = video.closest('ytd-video-renderer, ytd-grid-video-renderer, ytd-rich-item-renderer');
-    if (renderer) renderer.style.display = 'none';
+
+  document.querySelectorAll('a[href*="/shorts/"]').forEach(video => {
+    hideElement(video.closest('ytd-video-renderer, ytd-grid-video-renderer, ytd-rich-item-renderer'));
   });
 }
 
 function hideRelatedVideos() {
-  const secondary = document.querySelector('#secondary, #related, #secondary-inner');
-  if (secondary) secondary.style.display = 'none';
-  const primary = document.querySelector('#primary');
-  if (primary) primary.style.maxWidth = '100%';
+  hideElement(document.querySelector('#secondary'));
+  hideElement(document.querySelector('#related'));
+  // 関連動画を消した分だけ本編を広げる
+  setInlineStyles(document.querySelector('#primary'), { maxWidth: '100%' });
 }
 
 function hideComments() {
-  const comments = document.querySelector('#comments, ytd-comments, ytd-comments#comments');
-  if (comments) comments.style.display = 'none';
-  const commentElements = document.querySelectorAll('ytd-comments, #comment-section, .ytd-comments');
-  commentElements.forEach(el => el.style.display = 'none');
+  document.querySelectorAll('#comments, ytd-comments, #comment-section').forEach(hideElement);
 }
 
 // DOMの変更を監視（デバウンス付き）
 function startObserver() {
   observer = new MutationObserver(() => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      if (settings) {
-        if (settings.youtube.hideShorts) hideShorts();
-        if (settings.youtube.hideRelated) hideRelatedVideos();
-        if (settings.youtube.hideComments) hideComments();
-      }
-    }, 200);
+    debounceTimer = setTimeout(applyDomHiding, 200);
   });
 
   observer.observe(document.body, {
@@ -200,19 +165,14 @@ if (document.readyState === 'loading') {
   loadSettings();
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request) => {
   if (request.action === 'updateSettings') {
-    settings = request.settings;
-    if (settings && settings.youtube && settings.youtube.hideEndScreen === undefined) {
-      settings.youtube.hideEndScreen = true;
-    }
-    if (settings && settings.youtube && settings.youtube.hideMiniplayer === undefined) {
-      settings.youtube.hideMiniplayer = true;
-    }
+    settings = dfsMergeSettings(request.settings);
     applyRestrictions();
   }
 });
 
+// 定期的に制限状態をチェック（時間制限のため）
 setInterval(() => {
   if (settings) applyRestrictions();
 }, 60000);

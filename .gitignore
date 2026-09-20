@@ -1,0 +1,15 @@
+# 作業用データ（配布物には不要）
+制作データ/
+
+# コミットメッセージの下書き
+commit-message.txt
+
+# エディタ・ツールのローカル設定
+.claude/
+.vscode/
+*.code-workspace
+
+# OSが自動生成するファイル
+Thumbs.db
+desktop.ini
+.DS_Store

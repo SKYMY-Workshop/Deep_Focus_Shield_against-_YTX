@@ -408,6 +408,77 @@ body.dark-mode {
   transform: rotate(-90deg);
 }
 
+/* スヌーズセクション */
+.snooze-section {
+  margin-top: 15px;
+  padding: 12px;
+  background: var(--bg-hover);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.snooze-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.snooze-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.snooze-status-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.snooze-topics-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.snooze-topic-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--toggle-on);
+  color: white;
+}
+
+.snooze-capture-btn {
+  width: 100%;
+  padding: 8px;
+  background: var(--bg-gradient-start);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.snooze-capture-btn:hover:not(:disabled) {
+  background: var(--bg-gradient-end);
+}
+
+.snooze-capture-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.snooze-note {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  text-align: center;
+}
+
 /* スクロールバーのスタイル */
 ::-webkit-scrollbar {
   width: 6px;
@@ -424,4 +495,31 @@ body.dark-mode {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+}
+
+/* 既定タイムラインにするリスト名の入力欄 */
+.list-name-row {
+  padding: 0 4px 8px;
+}
+
+.list-name-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: border-color 0.2s ease;
+}
+
+.list-name-input:focus {
+  outline: none;
+  border-color: var(--border-hover);
+}
+
+.list-name-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

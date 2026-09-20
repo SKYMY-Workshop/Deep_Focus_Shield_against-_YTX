@@ -19,10 +19,11 @@ body.acis-twitter-recommendations-hidden [aria-label*="トピック"] {
   display: none !important;
 }
 
-/* プロモーション */
-body.acis-twitter-recommendations-hidden article[data-testid="tweet"]:has(svg path[d*="M19.498"]) {
-  display: none !important;
-}
+/* プロモーション（広告）の非表示は twitter-content.js の hidePromotedContent() が担当する。
+   以前ここにあった article:has(svg path[d*="M19.498"]) は、実機で確認したところ
+   現在のプロモツイートにそのパスが存在せず既に機能していなかったため削除した。
+   CSSではテキスト一致ができず、ラベル（「広告」「Promoted by ○○」）でしか
+   確実に判定できないのでJS側に移している。 */
 
 /* トレンドを非表示 - 右側のサイドバーのみ */
 body.acis-twitter-trends-hidden {
@@ -72,15 +73,6 @@ body.acis-twitter-active {
     display: none !important;
   }
 }
-
-/* Lists suggestions を非表示 */
-body.acis-twitter-active {
-  [aria-label*="Lists"],
-  [data-testid="List"] {
-    /* リスト提案のみ非表示、ユーザーのリストは残す */
-  }
-}
-
 
 /* Fleetを非表示 (もし存在する場合) */
 body.acis-twitter-active {

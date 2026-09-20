@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>TikTok はブロックされています</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+    }
+    h1 {
+      color: #667eea;
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #666;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .emoji {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .button:hover {
+      background: #764ba2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="emoji">🧠</div>
+    <h1>TikTok はブロックされています</h1>
+    <p>創造的な活動に集中しましょう！<br>Deep Focus Shield が<br>あなたの時間を守っています。</p>
+    <button id="back-button" class="button" type="button">戻る</button>
+  </div>
+  <!-- 拡張ページのCSPによりインラインスクリプトは実行できないため外部ファイルにする -->
+  <script src="blocked.js"></script>
+</body>
+</html>
